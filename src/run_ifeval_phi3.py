@@ -8,7 +8,7 @@ from datasets import load_dataset
 
 MODEL_NAME = "phi3:latest"
 OUTPUT_PATH = Path("experiments/sprint-2026-06-15/ifeval_phi3_results.json")
-MAX_PROMPTS = 10
+MAX_PROMPTS = 25
 
 
 def ask_model(prompt):
