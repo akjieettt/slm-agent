@@ -3,6 +3,7 @@
 import argparse
 import json
 from pathlib import Path
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from datasets import load_dataset
@@ -43,14 +44,28 @@ def ask_model(model_name, prompt):
         }
     ).encode("utf-8")
 
-    request = Request(
+    api_request = Request(
         "http://localhost:11434/api/generate",
         data=payload,
         headers={"Content-Type": "application/json"},
     )
 
-    with urlopen(request, timeout=3600) as response:
-        result = json.load(response)
+    try:
+        with urlopen(api_request, timeout=3600) as response:
+            result = json.load(response)
+    except URLError as error:
+        raise RuntimeError(
+            "Could not connect to the local Ollama server at "
+            "http://localhost:11434. Make sure Ollama is running."
+        ) from error
+    except TimeoutError as error:
+        raise RuntimeError(
+            "The Ollama request timed out before the model returned a patch."
+        ) from error
+    except HTTPError as error:
+        raise RuntimeError(
+            f"Ollama returned HTTP error {error.code}: {error.reason}"
+        ) from error
 
     return result["response"].strip()
 
